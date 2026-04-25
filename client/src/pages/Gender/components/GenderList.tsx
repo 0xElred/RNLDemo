@@ -1,60 +1,40 @@
-import { Link } from "react-router-dom"
+
+import { useEffect, useState, type FC } from "react";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/table"
+import type { GenderColumns } from "../../../interfaces/GendercColumns";
+import GenderService from "../../../services/GenderService";
+import Spinner from "../../../components/Spinner/Spinner";
 
+interface GenderListProps {
+    refreshkey: boolean
+}
 
-const GenderList = () => {
-    const genders = [
-        {
-            gender_id: 1,
-            gender: "Male",
-            action: (
-                <>
-                    <div className="flex gap-4">
-                        <div>
-                            <Link to={'/gender/edit'} className="text-green-600 hover:underline font-medium" >Edit</Link>
-                        </div>
-                        <div>
-                            <Link to={'/gender/delete'} className="text-red-600 hover:underline font-medium" >Delete</Link>
-                        </div>
-                    </div>
-                </>
-            )
-        },
-        {
-            gender_id: 2,
-            gender: "Female",
-            action: (
-                <>
-                    <div className="flex gap-4">
-                        <div>
-                            <Link to={'/gender/edit'} className="text-green-600 hover:underline font-medium" >Edit</Link>
-                        </div>
-                        <div>
-                            <Link to={'/gender/delete'} className="text-red-600 hover:underline font-medium" >Delete</Link>
-                        </div>
-                    </div>
-                </>
-            )
+const GenderList: FC<GenderListProps> = ({refreshkey}) => {
+    const [ loadingGenders, setLoadingGenders] = useState(false) 
+    const [ genders, setGenders] = useState <GenderColumns[]>([])
+    const handleLoadGenders = async () => {
+        try {
+            
+            setLoadingGenders(true)
 
-        },
-        {
-            gender_id: 3,
-            gender: "Prefer Not to say"
-            ,
-            action: (
-                <>
-                    <div className="flex gap-4">
-                        <div>
-                            <Link to={'/gender/edit'} className="text-green-600 hover:underline font-medium" >Edit</Link>
-                        </div>
-                        <div>
-                            <Link to={'/gender/delete'} className="text-red-600 hover:underline font-medium" >Delete</Link>
-                        </div>
-                    </div>
-                </>
-            )
+            const res = await GenderService.loadGenders()
+            if (res.status === 200) {
+                setGenders(res.data.genders)
+            } else {
+                console.error('Unexpected Status Error Occured during loading Genders: ', res.status)
+            }
+        } catch (error ) {
+            console.error('Unexpected server Error Occured during loading Genders: ', error)
+
+        } finally {
+            setLoadingGenders(false);
         }
-    ]
+    };
+
+    useEffect( () => {
+        handleLoadGenders();
+    }, [refreshkey]);
+
     return (
         <>
             <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -65,30 +45,28 @@ const GenderList = () => {
                                 <TableCell isHeader className=" px-5 py-3 font-medium text-center ">No.
 
                                 </TableCell>
-                                <TableCell isHeader className=" px-5 py-3 font-medium text-center ">Gender
+                                <TableCell isHeader className=" px-5 py-3 font-medium text-start ">Gender
 
                                 </TableCell>
-                                <TableCell isHeader className=" px-5 py-3 font-medium text-center ">Action
+                                {/* <TableCell isHeader className=" px-5 py-3 font-medium text-start ">Action
 
-                                </TableCell>
+                                </TableCell> */}
 
                             </TableRow>
                         </TableHeader>
                         <TableBody className="divide-y divide-gray-100 text-gray-600 text-sm ">
-                            {genders.map((gender, index) => (
-                                <TableRow className="hover:bg-gray-200" key={index}>
-                                    <TableCell className="px-4 py-3 text-center">
-                                        {gender.gender_id}
-                                    </TableCell>
-                                    <TableCell className="px-4 py-3 text-start">
-                                        {gender.gender}
-                                    </TableCell>
-                                    <TableCell className="px-4 py-3 text-start">
-                                        {gender.action}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-
+                           {loadingGenders ? (
+                            <TableRow>
+                                <TableCell colSpan={2} className="px-4 py-3 text-center"> 
+                                    <Spinner size="md"/>
+                                </TableCell>
+                            </TableRow>
+                           ) : genders.map((gender, index) => (
+                            <TableRow className="hover:bg-gray-100" key={index}>
+                                <TableCell className="px-4 py-3 text-center">{index + 1}</TableCell>
+                                <TableCell className="px-4 py-3 text-start">{gender.gender}</TableCell>
+                            </TableRow>
+                           )) }
                         </TableBody>
 
                     </Table>

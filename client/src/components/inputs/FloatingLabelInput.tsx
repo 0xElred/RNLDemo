@@ -27,7 +27,6 @@ const FloatingLabelInput: FC<FloatingLabelInputProps> = ({ label, type, name, va
                 <input type={type} id={name} name={name} value={value} onChange={onChange}
                     className={` ${newInputClassName ? newInputClassName : `block px-2.5 pb-2.5 pt-4 w-full text-sm text-heading bg-transparent rounded-base border border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer ${inputClassName}`}`}
                     placeholder=" "
-                    required={required}
                     autoFocus={autoFocus}
                     disabled={disabled}
                     readOnly={readonly}

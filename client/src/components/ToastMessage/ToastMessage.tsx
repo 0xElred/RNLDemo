@@ -7,7 +7,7 @@ interface ToastMessageProps {
     onClose: () => void
 }
 
-const ToastMessage:FC<ToastMessageProps> = ({message, 
+const toastMessage:FC<ToastMessageProps> = ({message, 
     // isSuccess,
      isVisible, onClose}) => {
     useEffect(() => {
@@ -39,4 +39,4 @@ const ToastMessage:FC<ToastMessageProps> = ({message,
   )
 }
 
-export default ToastMessage
+export default toastMessage
