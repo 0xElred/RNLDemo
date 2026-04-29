@@ -1,79 +1,218 @@
 
-import type { FC } from "react"
+import { useEffect, useState, type FC, type FormEvent } from "react"
 import FloatingLabelInput from "../../../components/inputs/FloatingLabelInput"
-import Modal from "../../../components/Modal/Index"
+import Modal from "../../../components/Modal/index"
 import FloatingLabelSelect from "../../../components/select/FloatingLabelSelect"
 import SubmitButton from "../../../components/buttons/SubmitButton"
 import CloseButton from "../../../components/buttons/CloseButton"
+import type { GenderColumns } from "../../../interfaces/GendercColumns";
+import GenderService from "../../../services/GenderService";
+import type { UserFieldErrors } from "../../../interfaces/UserFieldErrors";
+import UserService from "../../../services/UserService";
 
 interface AddUserFormModalProps {
-    isOpen?: boolean
-    onClose: () => void
+    onUserAdded: (message: string) => void
+    isOpen: boolean;
+    onClose: () => void;
 }
 
-const AddUserFormModal: FC<AddUserFormModalProps> = ({ isOpen, onClose }) => {
-    const genders = [
-        {
-            gender_id: ' ',
-            gender: 'Select Gender'
-        },
-        {
-            gender_id: 1,
-            gender: 'Male'
-        },
-        {
-            gender_id: 2,
-            gender: 'Female'
-        },
-        {
-            gender_id: 3,
-            gender: 'Prefer Not to say'
-        },
-    ]
+const AddUserFormModal: FC<AddUserFormModalProps> = ({ onUserAdded, isOpen, onClose }) => {
+    const [loadingGenders, setLoadingGenders] = useState(false);
+    const [genders, setGenders] = useState<GenderColumns[]> ([]);
+
+    const [loadingStore, setLoadingStore] = useState(false);
+    const [firstName, setFirstName] = useState("");
+    const [middleName, setMiddleName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [suffixName, setSuffixName] = useState('');
+    const [gender, setGender] = useState('');
+    const [birthDate, setBirthDate] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+
+    const [errors, setErrors] = useState<UserFieldErrors>({});
+
+    const handleStoreUser = async (e: FormEvent)=> {
+        try {
+            e.preventDefault()
+            setLoadingStore(true)
+            setErrors({})
+
+            const payload = { 
+                first_name: firstName,
+                middle_name: middleName,
+                last_name: lastName,
+                suffix_name: suffixName, 
+                gender: gender,
+                birth_date: birthDate,
+                username: username,
+                password: password,
+                password_confirmation: passwordConfirmation
+            }
+            const res = await UserService.storeUser(payload)
+
+            if (res.status === 200) {
+                onUserAdded(res.data.message)
+
+                setFirstName('')
+                setMiddleName('')
+                setLastName('')
+                setSuffixName('')
+                setGender('')
+                setBirthDate('')
+                setUsername('')
+                setPassword('')
+                setPasswordConfirmation('')
+                setErrors({})
+
+                handleLoadGenders();
+
+            } else {
+                console.error('Unexpected Status error occured during adding user: ', res.status)
+            }
+
+        } catch (error: any) {
+            if (error.response && error.response.status === 422) {
+                setErrors(error.response.data.errors)
+            } else {
+                console.log('Unexpected server error occured during adding user: ', error)
+            }
+        }
+        finally {
+            setLoadingStore(false);
+        }
+    }
+
+        const handleLoadGenders = async () => {
+        try {
+            
+            setLoadingGenders(true)
+
+            const res = await GenderService.loadGenders()
+            if (res.status === 200) {
+                setGenders(res.data.genders)
+            } else {
+                console.error('Unexpected Status Error Occured during loading Genders: ', res.status)
+            }
+        } catch (error ) {
+            console.error('Unexpected server Error Occured during loading Genders: ', error)
+
+        } finally {
+            setLoadingGenders(false);
+        }
+    };
+
+useEffect(() => {
+    if (isOpen) {
+        handleLoadGenders();
+        
+    }
+}, [isOpen])
+
+    const EyeIcon = ({ closed = false }: { closed?: boolean }) => (
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+            <circle cx="12" cy="12" r="3" />
+            {closed && <path d="M3 3l18 18" />}
+        </svg>
+    )
+
     return (
         <>
             <Modal isOpen={isOpen} onClose={onClose} showCloseButton className="bg-white rounded">
-                <form >
+                <form onSubmit={handleStoreUser}>
                     <h1 className="text-2-xl border-b boarder-gray-100 p-4 font-semibold mb-4"> Add User Form</h1>
                     <div className="grid grid-cols-2 gap-4 border-b border-gray-100 mb-4">
                         <div className="col-span-2 md:col-span-1">
                             <div className="mb-4">
-                                <FloatingLabelInput label="First Name" type="text" name="first_name" required autoFocus />
+                                <FloatingLabelInput label="First Name" type="text" name="first_name" value={firstName} onChange={ (e) => setFirstName(e.target.value)} required autoFocus errors={errors.first_name} />
                             </div>
                             <div className="mb-4">
-                                <FloatingLabelInput label="Middle Name" type="text" name="middle_name" />
+                                <FloatingLabelInput label="Middle Name" type="text" name="middle_name" value={middleName} onChange={(e) => setMiddleName(e.target.value)} errors={errors.middle_name} />
                             </div>
                             <div className="mb-4">
-                                <FloatingLabelInput label="Last Name" type="text" name="last_name" required />
+                                <FloatingLabelInput label="Last Name" type="text" name="last_name" value={lastName} onChange={(e) => setLastName(e.target.value)} required errors={errors.last_name} />
                             </div>
                             <div className="mb-4">
-                                <FloatingLabelInput label="Suffix Name" type="text" name="suffix_name" />
+                                <FloatingLabelInput label="Suffix Name" type="text" name="suffix_name" value={suffixName} onChange={(e) =>setSuffixName(e.target.value)} errors={errors.suffix_name}/>
                             </div>
                             <div className="mb-4">
-                                <FloatingLabelSelect label="Gender" name="gender"> {genders.map((gender, index) => (
-                                    <option value={gender.gender_id} key={index}> {gender.gender}</option>
-                                ))}
+                                <FloatingLabelSelect label="Gender " name="gender" value={gender} onChange={(e) => setGender(e.target.value)} required errors={errors.gender}> 
+                                    {loadingGenders ?
+                                        (<option value="" > Loading... </option> ) : (
+                                            <>
+                                            <option value="">Select Gender</option>
+                                        {genders.map ((gender, index) =>(
+                                        <option value={gender.gender_id} key={index}>{gender.gender}</option>
+                                    ))}
+                                        </>
+                                )}
+                                    
                                 </FloatingLabelSelect>
                             </div>
                         </div>
                         <div className="col-span-2 md:col-span-1">
                             <div className="mb-4">
-                                <FloatingLabelInput label="Birth Date" type="date" name="birth_date" required />
+                                <FloatingLabelInput label="Birth Date" type="date" name="birth_date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required errors={errors.birth_date} />
                             </div>
                             <div className="mb-4">
-                                <FloatingLabelInput label="Username" type="text" name="username" required />
+                                <FloatingLabelInput label="Username" type="text" name="username" value={username} onChange={(e) => setUsername(e.target.value)} required  errors={errors.username}/>
                             </div>
                             <div className="mb-4">
-                                <FloatingLabelInput label="Password" type="password" name="password" required />
+                                <FloatingLabelInput
+                                    label="Password"
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    errors={errors.password}
+                                    rightElement={
+                                        <button
+                                            type="button"
+                                            className="text-gray-500 hover:text-gray-700"
+                                            onClick={() => setShowPassword((prev) => !prev)}
+                                            aria-label={showPassword ? "Hide password" : "Show password"}
+                                            title={showPassword ? "Hide password" : "Show password"}
+                                        >
+                                            <EyeIcon closed={!showPassword} />
+                                        </button>
+                                    }
+                                />
                             </div>
                             <div className="mb-4">
-                                <FloatingLabelInput label="Password Confirmation" type="password" name="password_confirmation" required />
+                                <FloatingLabelInput
+                                    label="Password Confirmation"
+                                    type={showPasswordConfirmation ? "text" : "password"}
+                                    name="password_confirmation"
+                                    value={passwordConfirmation}
+                                    onChange={(e) =>setPasswordConfirmation(e.target.value)}
+                                    required
+                                    errors={errors.password_confirmation}
+                                    rightElement={
+                                        <button
+                                            type="button"
+                                            className="text-gray-500 hover:text-gray-700"
+                                            onClick={() => setShowPasswordConfirmation((prev) => !prev)}
+                                            aria-label={showPasswordConfirmation ? "Hide confirmation password" : "Show confirmation password"}
+                                            title={showPasswordConfirmation ? "Hide confirmation password" : "Show confirmation password"}
+                                        >
+                                            <EyeIcon closed={!showPasswordConfirmation} />
+                                        </button>
+                                    }
+                                />
                             </div>
                         </div>
                     </div>
                     <div className="flex justify-end gap-2">
-                        <CloseButton label="Close" onClose={onClose} />
-                        <SubmitButton label="Save User" />
+                        { loadingStore && ( 
+
+                            <CloseButton label="Close" onClose={onClose} />
+                        )}
+                        <SubmitButton label="Save User" loading={loadingStore} loadingLabel="Saving User... " />
                     </div>
 
 

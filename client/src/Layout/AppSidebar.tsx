@@ -6,12 +6,12 @@ const AppSidebar = () => {
 
     const sidebarItems = [
         {
-            path: '#',
-            text: 'Gender Lisr',
+            path: '/',
+            text: 'Gender',
         },
         {
-            path: '#',
-            text: 'User List',
+            path: '/users',
+            text: 'Users',
         },
     ];
 
@@ -33,8 +33,8 @@ const AppSidebar = () => {
                         <span className="self-center text-lg text-white font-semibold whitespace-nowrap">Flowbite</span>
                     </a>
                     <ul className="space-y-2 font-medium">
-                        {sidebarItems.map((sidebarItem) => (
-                            <li>
+                        {sidebarItems.map((sidebarItem, index) => (
+                            <li key={index}>
                                 <Link
                                     to={sidebarItem.path}
                                     className="flex items-center px-2 py-1.5 text-gray-200 rounded-base hover:bg-gray-700 hover:text-white group">

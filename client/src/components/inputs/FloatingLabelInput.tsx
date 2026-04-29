@@ -1,4 +1,4 @@
-import type { ChangeEvent, FC } from "react";
+import type { ChangeEvent, FC, ReactNode } from "react";
 
 interface FloatingLabelInputProps {
     label: string;
@@ -15,23 +15,29 @@ interface FloatingLabelInputProps {
     disabled?: boolean;
     readonly?: boolean;
     errors?: string[];
+    rightElement?: ReactNode;
 
 }
 
-const FloatingLabelInput: FC<FloatingLabelInputProps> = ({ label, type, name, value, onChange, newLabelClassName, labelClassName, newInputClassName, inputClassName, required, autoFocus, disabled, readonly, errors }) => {
+const FloatingLabelInput: FC<FloatingLabelInputProps> = ({ label, type, name, value, onChange, newLabelClassName, labelClassName, newInputClassName, inputClassName, required, autoFocus, disabled, readonly, errors, rightElement }) => {
     return (
         <>
 
 
             <div className="relative">
                 <input type={type} id={name} name={name} value={value} onChange={onChange}
-                    className={` ${newInputClassName ? newInputClassName : `block px-2.5 pb-2.5 pt-4 w-full text-sm text-heading bg-transparent rounded-base border border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer ${inputClassName}`}`}
+                    className={` ${newInputClassName ? newInputClassName : `block px-2.5 pb-2.5 pt-4 w-full text-sm text-heading bg-transparent rounded-base border border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer ${rightElement ? "pr-10" : ""} ${inputClassName}`}`}
                     placeholder=" "
                     autoFocus={autoFocus}
                     disabled={disabled}
                     readOnly={readonly}
 
                 />
+                {rightElement && (
+                    <div className="absolute inset-y-0 right-2 flex items-center">
+                        {rightElement}
+                    </div>
+                )}
 
                 <label htmlFor={name}
                     className={`${newLabelClassName ? newLabelClassName :

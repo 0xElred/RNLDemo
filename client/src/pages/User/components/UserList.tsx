@@ -1,64 +1,55 @@
-import type { FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../../components/table";
+import type { UserColumns } from "../../../interfaces/UserColumns";
+import UserService from "../../../services/UserService";
+import Spinner from "../../../components/Spinner/Spinner";
 
 interface UserListProps {
     onAddUser: () => void;
+    reloadKey?: number;
 }
 
-const UserList: FC<UserListProps> = ({ onAddUser }) => {
-    const users = [
-        {
-            user_id: 1,
-            first_name: 'Jhon Elred',
-            middle_name: '',
-            last_name: 'Vigo',
-            suffix_name: 'God Emperor',
-            gender: 'Male',
-            address: 'Heavenly Palace',
-            action: (
-                <>
-                    <div className="flex gap-4">
-                        <button type="button" className="text-green-600 font-medium cursor-pointer hover:underline">Edit</button>
-                        <button type="button" className="text-red-600 font-medium cursor-pointer hover:underline">Delete</button>
-                    </div>
-                </>
-            )
-        },
-        {
-            user_id: 2,
-            first_name: 'Carl Marvin ',
-            middle_name: 'Corrupt',
-            last_name: 'Clores',
-            suffix_name: 'Palace Minister',
-            gender: 'Male',
-            address: 'Heavenly Palace',
-            action: (
-                <>
-                    <div className="flex gap-4">
-                        <button type="button" className="text-green-600 font-medium cursor-pointer hover:underline">Edit</button>
-                        <button type="button" className="text-red-600 font-medium cursor-pointer hover:underline">Delete</button>
-                    </div>
-                </>
-            )
-        },
-        {
-            user_id: 3,
-            first_name: 'Diego ',
-            middle_name: 'Jew',
-            last_name: 'Billiones',
-            suffix_name: 'Theiving Official',
-            gender: 'Male',
-            address: 'Heavenly Palace',
-            action: (
-                <>
-                    <div className="flex gap-4">
-                        <button type="button" className="text-green-600 font-medium cursor-pointer hover:underline">Edit</button>
-                        <button type="button" className="text-red-600 font-medium cursor-pointer hover:underline">Delete</button>
-                    </div>
-                </>
-            )
-        },
-    ]
+const UserList: FC<UserListProps> = ({ onAddUser, reloadKey = 0 }) => {
+    const [loadingUsers, setLoadingUsers] = useState(false)
+    const [users, setUsers] = useState<UserColumns[]>([]);
+
+    const handleLoadUsers = async () =>  {
+        try {
+            setLoadingUsers(true)
+
+            const res = await UserService.loadUsers()
+
+            if (res.status === 200) {
+                setUsers(res.data.users)
+            } else {
+                console.error('Unexpected Status error during loading Users: ' , res.status);
+            }
+
+        } catch (error) {
+            console.error('Unexpected Server error during loading Users: ', error);
+        }finally {
+            setLoadingUsers(false);
+        }
+    };
+
+
+    useEffect(() => {
+        handleLoadUsers();
+    }, [reloadKey]);
+
+    const handleUserFullNameFormat = (user: UserColumns) => {
+        let fullName =  ''
+        if (user.middle_name) {
+            fullName = `${user.last_name}, ${user.first_name}, ${user.middle_name.charAt(0)}.`;
+        } else {
+            fullName = `${user.last_name}, ${user.first_name}`;
+        }
+        if (user.suffix_name) {
+            fullName += `${user.suffix_name}`;
+        }
+        return fullName;
+    };
+
     return (
         <>
             <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -77,22 +68,16 @@ const UserList: FC<UserListProps> = ({ onAddUser }) => {
                                 <TableCell isHeader className=" px-5 py-3 font-medium text-center ">No.
                                 </TableCell>
 
-                                <TableCell isHeader className=" px-5 py-3 font-medium text-center ">First Name
-                                </TableCell>
-
-                                <TableCell isHeader className=" px-5 py-3 font-medium text-center ">Middle Name
-                                </TableCell>
-
-                                <TableCell isHeader className=" px-5 py-3 font-medium text-center ">Last Name
-                                </TableCell>
-
-                                <TableCell isHeader className=" px-5 py-3 font-medium text-center ">Suffix Name
+                                <TableCell isHeader className=" px-5 py-3 font-medium text-center ">Full Name
                                 </TableCell>
 
                                 <TableCell isHeader className=" px-5 py-3 font-medium text-center ">Gender
                                 </TableCell>
 
-                                <TableCell isHeader className=" px-5 py-3 font-medium text-center ">Address
+                                <TableCell isHeader className=" px-5 py-3 font-medium text-center ">Birth Date
+                                </TableCell>
+
+                                <TableCell isHeader className=" px-5 py-3 font-medium text-center ">Age
                                 </TableCell>
 
                                 <TableCell isHeader className=" px-5 py-3 font-medium text-start ">Action
@@ -102,43 +87,43 @@ const UserList: FC<UserListProps> = ({ onAddUser }) => {
                             </TableRow>
                         </TableHeader>
                         <TableBody className="divide-y divide-gray-100 text-gray-600 text-sm ">
-                            {users.map((user, index) => (
-                                <TableRow className="hover:bg-gray-200" key={index}>
-                                    <TableCell className="px-4 py-3 text-center">
-                                        {user.user_id}
-                                    </TableCell>
 
-                                    <TableCell className="px-4 py-3 text-center">
-                                        {user.first_name}
+                            {loadingUsers ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="px-4 py-4 text-center"> 
+                                    <Spinner size="md"/>
                                     </TableCell>
-
-                                    <TableCell className="px-4 py-3 text-center">
-                                        {user.middle_name}
-                                    </TableCell>
-
-                                    <TableCell className="px-4 py-3 text-center">
-                                        {user.last_name}
-                                    </TableCell>
-
-                                    <TableCell className="px-4 py-3 text-center">
-                                        {user.suffix_name}
-                                    </TableCell>
-
-                                    <TableCell className="px-4 py-3 text-center">
-                                        {user.gender}
-                                    </TableCell>
-
-                                    <TableCell className="px-4 py-3 text-center">
-                                        {user.address}
-                                    </TableCell>
-
-                                    <TableCell className="px-4 py-3 text-center">
-                                        {user.action}
-                                    </TableCell>
-
                                 </TableRow>
-                            ))}
+                            ) : (
+                                users.map((user, index) =>(
+                                    <TableRow className="hover:bg-gray-100" key={index}>
+                                        <TableCell className="px-4 py-3 text-center">
+                                            {index + 1}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-start">
+                                            {handleUserFullNameFormat(user)}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-start">
+                                            {user.gender.gender}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-start">
+                                            {user.birth_date}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-start">
+                                            {user.age}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3 text-center">
+                                            <div className="flex  gap-4">
+                                            <button type="button" className="text-green-600 hover:underline">Edit</button>
+                                            <button type="button" className="text-red-600 hover:underline">Delete</button>
+                                            </div>
+                                        </TableCell>
 
+                                    </TableRow>
+                                ))
+
+                            )}
+                           
                         </TableBody>
 
                     </Table>
