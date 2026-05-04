@@ -5,18 +5,19 @@ import Modal from "../../../components/Modal/index"
 import FloatingLabelSelect from "../../../components/select/FloatingLabelSelect"
 import SubmitButton from "../../../components/buttons/SubmitButton"
 import CloseButton from "../../../components/buttons/CloseButton"
-import type { GenderColumns } from "../../../interfaces/GendercColumns";
 import GenderService from "../../../services/GenderService";
-import type { UserFieldErrors } from "../../../interfaces/UserFieldErrors";
 import UserService from "../../../services/UserService";
+import type { UserFieldErrors } from "../../../interfaces/UserInterface"
+import type { GenderColumns } from "../../../interfaces/GenderInterface"
 
 interface AddUserFormModalProps {
     onUserAdded: (message: string) => void
     isOpen: boolean;
     onClose: () => void;
+    refreshKey: () => void;
 }
 
-const AddUserFormModal: FC<AddUserFormModalProps> = ({ onUserAdded, isOpen, onClose }) => {
+const AddUserFormModal: FC<AddUserFormModalProps> = ({ onUserAdded, isOpen, onClose, refreshKey }) => {
     const [loadingGenders, setLoadingGenders] = useState(false);
     const [genders, setGenders] = useState<GenderColumns[]> ([]);
 
@@ -51,24 +52,25 @@ const AddUserFormModal: FC<AddUserFormModalProps> = ({ onUserAdded, isOpen, onCl
                 username: username,
                 password: password,
                 password_confirmation: passwordConfirmation
-            }
+            };
+
             const res = await UserService.storeUser(payload)
 
             if (res.status === 200) {
-                onUserAdded(res.data.message)
-
-                setFirstName('')
-                setMiddleName('')
-                setLastName('')
-                setSuffixName('')
-                setGender('')
-                setBirthDate('')
-                setUsername('')
-                setPassword('')
-                setPasswordConfirmation('')
-                setErrors({})
-
-                handleLoadGenders();
+                setFirstName('');
+                setMiddleName('');
+                setLastName('');
+                setSuffixName('');
+                setGender('');
+                setBirthDate('');
+                setUsername('');
+                setPassword('');
+                setPasswordConfirmation('');
+                setErrors({});
+                
+                onUserAdded(res.data.message);
+                refreshKey();
+                onClose();
 
             } else {
                 console.error('Unexpected Status error occured during adding user: ', res.status)

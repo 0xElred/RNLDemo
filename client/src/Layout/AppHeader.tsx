@@ -1,11 +1,52 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useHeader } from "../context/HeaderContext";
 import { useSidebar } from "../context/SidebarContext";
+import { useAuth } from "../hooks/useAuth";
+import { useEffect, useState, type FormEvent } from "react";
 
 const AppHeader = () => {
     const { isOpen, toggleUserMenu } = useHeader()
     const { toggleSidebar } = useSidebar();
+    const {user, logout} = useAuth()
+    const navigate = useNavigate();
 
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleLogout = async (e: FormEvent) => {
+        try {
+            e.preventDefault();
+            setIsLoading(true);
+            await logout();
+            navigate('/')
+        } catch (error) {
+            console.error("Unexpected server error occured during logging user out: ", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const handleUserFullNameFormat = () => {
+        if (!user) return ""
+        
+        let fullName = `${user.last_name}, ${user.first_name}`
+        
+        if (user.middle_name) {
+            fullName += ` ${user.middle_name.charAt(0)}.`
+        }
+        if (user.suffix_name) {
+            fullName += ` ${user.suffix_name}`
+        }
+
+        return fullName
+    }
+
+
+
+    useEffect(() => {
+        if(user) {
+            handleUserFullNameFormat();
+        }
+    }, [user]);
 
     return (
         <>
@@ -41,22 +82,27 @@ const AppHeader = () => {
                                         <img className="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="user photo" />
                                     </button>
                                 </div>
-                                <div className={`absolute right-8 top-9 min-w-[200px]  z-50 ${isOpen ? 'block' : 'hidden'}  bg-white border border-gray-200 rounded-base shadow-lg w-44" id="dropdown-user`}>
+                                <div
+                                    className={`absolute right-8 top-9 min-w-[200px] z-50 ${isOpen ? "block" : "hidden"} bg-white border border-gray-200 rounded-base shadow-lg w-44`}
+                                    id="dropdown-user"
+                                >
                                     <div className="px-4 py-3 border-b border-gray-200" role="none">
                                         <p className="text-sm font-medium text-gray-900" role="none">
-                                            Neil Sims
-                                        </p>
-                                        <p className="text-sm text-gray-600 truncate" role="none">
-                                            neil.sims@flowbite.com
+                                            {handleUserFullNameFormat()}    
                                         </p>
                                     </div>
                                     <ul className="p-2 text-sm text-gray-700 font-medium" role="none">
 
                                         <li>
-                                            <Link
-                                                to="#"
-                                                className="inline-flex items-center w-full p-2 hover:bg-gray-100 hover:text-gray-900 rounded" role="menuitem">Sign out
-                                            </Link>
+                                            <button
+                                                type="submit"
+                                                className="block px-4 py-2 text-sm text-gray-200 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white w-full text-start cursor-pointer disabled:cursor-not-allowed"
+                                                role="menuitem"
+                                                onClick={handleLogout}
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading ? "Signing Out..." : "Sign Out"}
+                                            </button>
                                         </li>
                                     </ul>
                                 </div>

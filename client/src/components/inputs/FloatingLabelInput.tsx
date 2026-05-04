@@ -31,7 +31,7 @@ const FloatingLabelInput: FC<FloatingLabelInputProps> = ({ label, type, name, va
                     autoFocus={autoFocus}
                     disabled={disabled}
                     readOnly={readonly}
-
+                    required={required}
                 />
                 {rightElement && (
                     <div className="absolute inset-y-0 right-2 flex items-center">

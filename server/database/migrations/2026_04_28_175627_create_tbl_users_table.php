@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tbl_users', function (Blueprint $table) {
             $table->id('user_id');
             $table->string('first_name', 55);
-            $table->string('midlle_name', 55)->nullable();
+            $table->string('middle_name', 55)->nullable();
             $table->string('last_name', 55);
             $table->string('suffix_name', 55)->nullable();
             $table->unsignedBigInteger('gender_id');
