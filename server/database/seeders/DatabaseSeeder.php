@@ -44,5 +44,7 @@ class DatabaseSeeder extends Seeder
             'username' => 'johndoe',
             'password' => 'johndoe'
         ]);
+
+        User::factory(100)->create();
     }
 }

@@ -29,7 +29,7 @@ const ToastMessage: FC<ToastMessageProps> = ({
         <>
             {failed ? (
                 <div
-                    className={`fixed top-40 right-0 z-50 flex w-full max-w-xs items-center rounded-lg border border-red-200 bg-red-100 p-4 m-4 text-red-900 shadow-lg transition-opacity duration-300 md:right-4 ${isVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+                    className={`fixed top-40 right-0 z-[10050] flex w-full max-w-xs items-center rounded-lg border border-red-200 bg-red-100 p-4 m-4 text-red-900 shadow-lg transition-opacity duration-300 md:right-4 ${isVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
                     role="alert"
                 >
                     <div
@@ -54,7 +54,7 @@ const ToastMessage: FC<ToastMessageProps> = ({
                 </div>
             ) : (
                 <div
-                    className={`fixed top-40 right-0 z-50 flex w-full max-w-xs items-center rounded-lg border border-green-200 bg-green-100 p-4 m-4 text-gray-900 shadow-lg transition-opacity duration-300 md:right-4 ${isVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+                    className={`fixed top-40 right-0 z-[10050] flex w-full max-w-xs items-center rounded-lg border border-green-200 bg-green-100 p-4 m-4 text-gray-900 shadow-lg transition-opacity duration-300 md:right-4 ${isVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
                     role="alert"
                 >
                     <div

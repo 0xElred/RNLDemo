@@ -9,9 +9,16 @@ AxiosInstance.interceptors.request.use((config) =>{
       if(token) {
         config.headers['Authorization'] = `Bearer ${token}`;
       }
-      if(config.data instanceof FormData) {
-        config.headers['Content-Type'] = 'multipart/form-data';
-      }else {
+      if (config.data instanceof FormData) {
+        // Let the runtime set multipart/form-data with the correct boundary.
+        const h = config.headers;
+        if (h && typeof (h as { delete?: (name: string) => void }).delete === 'function') {
+          (h as { delete: (name: string) => void }).delete('Content-Type');
+          (h as { delete: (name: string) => void }).delete('content-type');
+        }
+        delete (config.headers as Record<string, unknown>)['Content-Type'];
+        delete (config.headers as Record<string, unknown>)['content-type'];
+      } else {
         config.headers['Content-Type'] = 'application/json';
       }
       return config
